@@ -2,8 +2,8 @@
 FROM php:8-fpm-alpine
 WORKDIR /app/api
 
-ARG UID
-ARG GID
+ARG UID=1000
+ARG GID=1000
 
 ENV UID=${UID}
 ENV GID=${GID}
