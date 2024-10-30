@@ -39,7 +39,7 @@ jobs:
           context: ./unicorn-frontend  # Ensure the path is correct
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-          target: prod-static
+          target: prod
 
       - name: Docker meta (backend)
         id: meta-back-end
