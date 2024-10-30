@@ -9,14 +9,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+        with:
+          fetch-depth: 0  # Fetch all files
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
-      
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      
-      - name: Docker meta
+
+      - name: Docker meta (frontend)
         id: meta
         uses: docker/metadata-action@v5
         with:
@@ -24,22 +26,22 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/front-end
           tags: |
             type=sha,prefix=,suffix=
-      
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      
+
       - name: Build and push front-end application
         uses: docker/build-push-action@v6
         with:
-          context: web
+          context: ./unicorn-frontend  # Ensure the path is correct
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           target: prod-static
 
-      - name: Docker meta
+      - name: Docker meta (backend)
         id: meta-back-end
         uses: docker/metadata-action@v5
         with:
@@ -51,6 +53,6 @@ jobs:
       - name: Build and push back-end application
         uses: docker/build-push-action@v6
         with:
-          context: api
+          context: ./unicorn-backend  # Ensure the path is correct
           push: true
           tags: ${{ steps.meta-back-end.outputs.tags }}
