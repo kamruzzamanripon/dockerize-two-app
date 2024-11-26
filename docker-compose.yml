@@ -2,9 +2,11 @@ version: '3.8'
 
 services:
   web:
+    container_name: unicorn_frontend_container
+    image: unicorn_frontend_image
     build:
-      context: ./unicorn-frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Dockerfile_frontend
       target: ${TARGET:-prod}
     ports:
       - 5050:5173  # Vite Dev server (frontend)
@@ -24,9 +26,11 @@ services:
       - full_stack
 
   api:
+    container_name: unicorn_backend_container
+    image: unicorn_backend_image
     build:
-      context: ./unicorn-backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Dockerfile_Backend
       args:
         - UID=${UID:-1000}
         - GID=${GID:-1000}
@@ -35,18 +39,24 @@ services:
       - 8000:8000  # Laravel API on 8000
     volumes:
       - ./unicorn-backend:/app/api
-    environment:
-      APP_ENV: local
-      APP_DEBUG: 1
-      APP_KEY: base64:$(head -c 32 /dev/urandom | base64)
+      - ./shell-command-entrypoint:/app/shell-command-entrypoint
+    env_file:
+      - ./unicorn-backend/.env  
+    # environment:
+    #   MYSQL_DATABASE: laravel
+    #   MYSQL_USER: laravel
+    #   MYSQL_PASSWORD: secret
+    #   MYSQL_ROOT_PASSWORD: secret
     restart: on-failure:10
     healthcheck:
-      test: curl --fail http://localhost:8000 || exit 1  # API healthcheck
+      test: curl --fail http://localhost:8888 || exit 1  # API healthcheck
       start_period: 10s
       interval: 30s
       timeout: 5s
       retries: 3
-    command: ["/bin/sh", "-c", "php artisan migrate:refresh --seed && php-fpm -D && nginx -g 'daemon off;'"]  
+    #command: ["/bin/sh", "-c", "php artisan migrate:refresh --seed && php-fpm -D && nginx -g 'daemon off;'"]
+    command: ["/bin/sh", "-c", "/app/shell-command-entrypoint/backend-entrypoint.sh"]
+    #entrypoint: ["/bin/sh", "/app/shell-command-entrypoint/backend-entrypoint.sh"]   
     networks:
       - full_stack
 
@@ -54,11 +64,13 @@ services:
     image: mysql:8.0
     ports:
       - 3306:3306
-    environment: 
-      MYSQL_DATABASE: laravel
-      MYSQL_USER: laravel
-      MYSQL_PASSWORD: secret
-      MYSQL_ROOT_PASSWORD: secret
+    env_file:
+      - ./unicorn-backend/.env  
+    # environment: 
+      # MYSQL_DATABASE: laravel
+      # MYSQL_USER: laravel
+      # MYSQL_PASSWORD: secret
+      # MYSQL_ROOT_PASSWORD: secret
     volumes:
       - ./unicorn-backend/mysql:/var/lib/mysql # Persist MySQL data
     networks:

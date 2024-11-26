@@ -1,11 +1,11 @@
 FROM node:23-alpine3.19 AS base
 WORKDIR /app/web
 
-COPY package.json package-lock.json ./
+COPY ./unicorn-frontend/package.json ./unicorn-frontend/package-lock.json ./
 #RUN npm install -g @vue/cli && npm install
 RUN npm install
 
-COPY . .
+COPY ./unicorn-frontend .
 
 ### Development Stage
 FROM base AS dev
@@ -20,6 +20,6 @@ CMD ["npm", "run", "dev"]
 ### Production Stage with Nginx
 FROM nginx:stable-alpine AS prod
 COPY --from=build /app/web/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/nginx.conf
+COPY ./nginx/frontend_nginx.conf /etc/nginx/nginx.conf
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
