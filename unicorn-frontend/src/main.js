@@ -10,7 +10,7 @@ import router from './router'
 const app = createApp(App)
 
 // Set Axios base URL and default headers
-axios.defaults.baseURL = 'http://127.0.0.1:8080';
+axios.defaults.baseURL = 'http://127.0.0.1:8888';
 axios.defaults.headers.common['Content-Type'] = 'application/json';
 
 

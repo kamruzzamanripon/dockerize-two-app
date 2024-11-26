@@ -31,7 +31,7 @@ services:
         - UID=${UID:-1000}
         - GID=${GID:-1000}
     ports:
-      - 8080:80  # Expose Nginx proxy on port 8080
+      - 8888:80  # Expose Nginx proxy on port 8080
       - 8000:8000  # Laravel API on 8000
     volumes:
       - ./unicorn-backend:/app/api
@@ -46,6 +46,7 @@ services:
       interval: 30s
       timeout: 5s
       retries: 3
+    command: ["/bin/sh", "-c", "php artisan migrate:refresh --seed && php-fpm -D && nginx -g 'daemon off;'"]  
     networks:
       - full_stack
 
