@@ -13,6 +13,7 @@ services:
       - 3000:80    # Production Nginx (serves frontend)
     volumes:
       - ./unicorn-frontend:/app/web
+      - node_modules:/app/web/node_modules
     depends_on:
       - api
     restart: on-failure:10
@@ -72,9 +73,13 @@ services:
       # MYSQL_PASSWORD: secret
       # MYSQL_ROOT_PASSWORD: secret
     volumes:
-      - ./unicorn-backend/mysql:/var/lib/mysql # Persist MySQL data
+      #- ./unicorn-backend/mysql:/var/lib/mysql # Persist MySQL data
+      -  mysql-data:/var/lib/mysql 
     networks:
       - full_stack 
 
 networks:
   full_stack: {}
+volumes:
+  node_modules:  
+  mysql-data:  
