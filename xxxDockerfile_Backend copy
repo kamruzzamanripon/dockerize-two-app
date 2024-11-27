@@ -30,18 +30,14 @@ RUN apk update && apk add --no-cache \
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Copy application code to the container
-COPY ./unicorn-backend /app/api
-
 # Set permissions for storage and cache
 RUN mkdir -p /app/api/storage /app/api/bootstrap/cache \
-  && chown -R laravel:laravel /app/api/storage /app/api/bootstrap/cache
-
-# Install Composer dependencies
-RUN composer install --no-dev --optimize-autoloader
+  && chown -R laravel:laravel /app/api/storage /app/api/bootstrap/cache \
+  && composer update
 
 # Copy Nginx configuration
-COPY ./nginx/backend_nginx.conf /etc/nginx/nginx.conf
+COPY ./nginx/backend_nginx.conf /etc/nginx/nginx.conf  
+  
 
 # Expose both Nginx (80) and PHP-FPM (9000)
 EXPOSE 80 9000
