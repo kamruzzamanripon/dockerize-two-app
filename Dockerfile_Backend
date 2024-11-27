@@ -35,10 +35,10 @@ COPY ./unicorn-backend /app/api
 
 # Set permissions for storage and cache
 RUN mkdir -p /app/api/storage /app/api/bootstrap/cache \
-  && chown -R laravel:laravel /app/api/storage /app/api/bootstrap/cache
+  && chown -R laravel:laravel /app/api
 
 # Install Composer dependencies
-RUN composer update --no-dev --optimize-autoloader
+RUN composer install --no-dev --optimize-autoloader
 
 # Copy Nginx configuration
 COPY ./nginx/backend_nginx.conf /etc/nginx/nginx.conf
