@@ -10,7 +10,7 @@
                     class="text-white bg-[#4E46B4] hover:bg-blue-800 focus:ring-4 font-medium rounded-lg text-sm px-2 py-2 lg:px-5 lg:py-2.5 me-2 mb-2 dark:bg-[#4E46B4] focus:outline-none dark:focus:ring-blue-800 flex items-center space-x-3"
                     @click="openUnicornCreateModal">
                     <StopIcon class="w-7 hidden lg:block" />
-                    <span>Create Unicorn and info</span>
+                    <span>Create Unicorn</span>
                 </button>
             </div>
         </div>
