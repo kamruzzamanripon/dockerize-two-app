@@ -1,19 +1,23 @@
-# Use official PHP-FPM image with Alpine
+# Stage 1: Build dependencies using Composer
+FROM composer:2 AS composer-build
+
+WORKDIR /app
+
+# Copy composer files
+COPY ./unicorn-backend/composer.json ./unicorn-backend/composer.lock ./
+
+# Install dependencies
+RUN composer install --no-dev --optimize-autoloader --no-scripts
+
+# Stage 2: Base image for PHP and dependencies
 FROM php:8-fpm-alpine
-WORKDIR /app/api
 
-ARG UID=1000
-ARG GID=1000
+# Set default user and UID if not provided during build
+ARG user=laravel
+ARG group=laravel
+ARG uid=1000
 
-ENV UID=${UID}
-ENV GID=${GID}
-
-# Create Laravel user and adjust PHP-FPM config
-RUN addgroup -g ${GID} laravel && adduser -G laravel -u ${UID} -D laravel \
-  && sed -i "s/user = www-data/user = laravel/" /usr/local/etc/php-fpm.d/www.conf \
-  && sed -i "s/group = www-data/group = laravel/" /usr/local/etc/php-fpm.d/www.conf
-
-# Install required tools and extensions
+# Install system dependencies and PHP extensions
 RUN apk update && apk add --no-cache \
     mysql-client \
     nginx \
@@ -27,24 +31,32 @@ RUN apk update && apk add --no-cache \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd pdo pdo_mysql mbstring exif pcntl bcmath opcache
 
-# Install Composer
+# Install Composer globally
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Copy application code to the container
-COPY ./unicorn-backend /app/api
+# Create developer user and group
+RUN addgroup -g $uid $user && \
+    adduser -u $uid -G $user -D $group -D -h /home/$user $user && \
+    mkdir -p /home/$user/.composer && \
+    chown -R $user:$user /home/$user
 
-# Set permissions for storage and cache
-RUN mkdir -p /app/api/storage /app/api/bootstrap/cache \
-  && chown -R laravel:laravel /app/api
+# Set working directory
+WORKDIR /app/api
 
-# Install Composer dependencies
-RUN composer install --no-dev --optimize-autoloader
+# Copy application code
+COPY ./unicorn-backend ./
+
+# Copy dependencies from the Composer build stage
+COPY --from=composer-build /app/vendor ./vendor
+
+# Set ownership of application directory
+RUN chown -R $user:$user /app/api
 
 # Copy Nginx configuration
 COPY ./nginx/backend_nginx.conf /etc/nginx/nginx.conf
 
-# Expose both Nginx (80) and PHP-FPM (9000)
+# Expose Nginx (80) and PHP-FPM (9000) ports
 EXPOSE 80 9000
 
-# Start services (Nginx + PHP-FPM)
-CMD ["sh", "-c", "php-fpm -D && nginx -g 'daemon off;'"]
+# Default command to run the application
+CMD ["sh", "-c", "composer install && php artisan migrate:refresh --seed && php-fpm -D && nginx -g 'daemon off;'"]
