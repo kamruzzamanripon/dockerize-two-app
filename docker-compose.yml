@@ -16,6 +16,8 @@ services:
       - node_modules:/app/web/node_modules
     depends_on:
       - api
+    environment:
+      - VITE_BACKEND_URL=http://unicorn_backend_container:8888  
     restart: on-failure:10
     healthcheck:
       test: curl --fail http://localhost:5050 || exit 1  # Frontend healthcheck
@@ -37,7 +39,7 @@ services:
         - GID=${GID:-1000}
     ports:
       - 8888:80  # Expose Nginx proxy on port 8080
-      - 8000:8000  # Laravel API on 8000
+      #- 8000:8000  # Laravel API on 8000
     volumes:
       - ./unicorn-backend:/app/api
       #- ./shell-command-entrypoint:/app/shell-command-entrypoint

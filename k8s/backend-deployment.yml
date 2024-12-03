@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+  labels:
+    app: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: syedkamruzzaman/unicorn_backend_image
+          ports:
+            - containerPort: 8888  # Expose Laravel API
+          envFrom:
+            - configMapRef:
+                name: backend-env-config
+          volumeMounts:
+            - name: backend-volume
+              mountPath: /app/api
+      volumes:
+        - name: backend-volume
+          emptyDir: {}
