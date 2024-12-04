@@ -22,6 +22,15 @@ spec:
           envFrom:
             - configMapRef:
                 name: backend-env-config
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: "secret"
+            - name: MYSQL_DATABASE
+              value: "laravel"
+            - name: MYSQL_USER
+              value: "laravel"
+            - name: MYSQL_PASSWORD
+              value: "secret"      
           volumeMounts:
             - name: backend-volume
               mountPath: /app/api

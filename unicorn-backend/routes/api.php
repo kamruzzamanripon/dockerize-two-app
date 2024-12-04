@@ -8,6 +8,9 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
+Route::get('/test', function (Request $request) {
+    return "hello api, how are you";
+});
 
 Route::get('/unicorns', [UnicornController::class, 'index']);
 Route::get('/unicorns/{unicorn}', [UnicornController::class, 'singleInfo']);

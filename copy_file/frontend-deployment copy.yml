@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+  labels:
+    app: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: syedkamruzzaman/unicorn_frontend_image
+          ports:
+            - containerPort: 3000  # For Nginx production
+            - containerPort: 5173  # For Vite dev server
+          env:
+            - name: VITE_BACKEND_URL
+              value: http://backend-svc:8888 # Kubernetes service name for backend

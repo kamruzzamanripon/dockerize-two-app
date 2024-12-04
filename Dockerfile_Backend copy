@@ -54,14 +54,6 @@ COPY --from=composer-build /app/vendor ./vendor
 # Set ownership of application directory
 RUN chown -R $user:$user /app/api
 
-# Set permissions for Laravel directories
-RUN chown -R $user:$user /app/api && \
-    chmod -R 775 /app/api/storage /app/api/bootstrap/cache
-
-# Copy the start script
-COPY ./start.sh /start.sh
-RUN chmod +x /start.sh    
-
 # Copy Nginx configuration
 COPY ./nginx/backend_nginx.conf /etc/nginx/nginx.conf
 
@@ -70,4 +62,7 @@ EXPOSE 80 9000
 
 # Default command to run the application
 #CMD ["sh", "-c", "composer install && php artisan migrate:refresh --seed && php-fpm -D && nginx -g 'daemon off;'"]
-CMD ["./shell-command-entrypoint/start.sh"]
+CMD ["sh", "-c", "composer install && php-fpm -D && nginx -g 'daemon off;'"]
+
+#CMD ["sh", "-c", "if [ ! -f /app/api/composer.json ]; then echo 'Missing application files'; exit 1; fi; php artisan migrate:refresh --seed && php-fpm -D && nginx -g 'daemon off;'"]
+
