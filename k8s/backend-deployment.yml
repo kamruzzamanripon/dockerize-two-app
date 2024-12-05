@@ -31,9 +31,4 @@ spec:
               value: "laravel"
             - name: MYSQL_PASSWORD
               value: "secret"      
-          volumeMounts:
-            - name: backend-volume
-              mountPath: /app/api
-      volumes:
-        - name: backend-volume
-          emptyDir: {}
+  

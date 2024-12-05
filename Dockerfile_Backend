@@ -48,6 +48,7 @@ COPY ./unicorn-backend ./
 # Copy composer files
 COPY ./unicorn-backend/composer.json ./unicorn-backend/composer.lock ./
 
+
 # Copy dependencies from the Composer build stage
 COPY --from=composer-build /app/vendor ./vendor
 
@@ -56,11 +57,12 @@ RUN chown -R $user:$user /app/api
 
 # Set permissions for Laravel directories
 RUN chown -R $user:$user /app/api && \
-    chmod -R 775 /app/api/storage /app/api/bootstrap/cache
+    chmod -R 775 /app/api/storage /app/api/bootstrap/cache && \
+    chmod -R 775 /app/api/storage/framework /app/api/storage/logs
 
 # Copy the start script
-COPY ./start.sh /start.sh
-RUN chmod +x /start.sh    
+COPY ./shell-command-entrypoint/seeder_table.sh /seeder_table.sh
+RUN chmod +x /seeder_table.sh   
 
 # Copy Nginx configuration
 COPY ./nginx/backend_nginx.conf /etc/nginx/nginx.conf
@@ -70,4 +72,7 @@ EXPOSE 80 9000
 
 # Default command to run the application
 #CMD ["sh", "-c", "composer install && php artisan migrate:refresh --seed && php-fpm -D && nginx -g 'daemon off;'"]
-CMD ["./shell-command-entrypoint/start.sh"]
+#CMD ["./shell-command-entrypoint/start.sh"]
+
+ENTRYPOINT ["bash", "/seeder_table.sh"]
+CMD ["php-fpm", "-D", "&&", "nginx", "-g", "daemon off;"]

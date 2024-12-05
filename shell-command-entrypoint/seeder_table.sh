@@ -1,15 +1,21 @@
-#!/bin/sh
+#!/bin/bash
 
-# Wait for the database to be available
-until php artisan migrate:status; do
-  echo "Waiting for DB to be ready..."
-  sleep 5
+# Change to the Laravel app directory
+cd /app/api
+
+composer install
+
+DB_HOST=${DB_HOST:-mysql}  # Default to "mysql" as the hostname
+
+echo "Waiting for database to be ready..."
+until nc -z -v -w30 $DB_HOST 3306; do
+    echo "Waiting for database connection..."
+    sleep 1
 done
 
-# Run migrations and seed the database
-php artisan migrate --force
-php artisan db:seed --force
+echo "Running migrations and seeders..."
+php artisan migrate:refresh --seed
 
-# Start PHP-FPM and Nginx
+echo "Starting PHP-FPM and Nginx..."
 php-fpm -D
 nginx -g 'daemon off;'
