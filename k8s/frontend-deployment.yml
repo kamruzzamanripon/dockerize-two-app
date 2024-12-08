@@ -18,5 +18,8 @@ spec:
         - name: frontend
           image: syedkamruzzaman/unicorn_frontend_image
           ports:
-            - containerPort: 3000  
+            - containerPort: 3000
+          env:
+          - name: VITE_BACKEND_URL
+            value: "http://127.0.0.1:31000"
            

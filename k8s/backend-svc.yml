@@ -14,4 +14,4 @@ spec:
   ports:
     - port: 8888
       targetPort: 80
-      nodePort: 30001 # Choose an available node port
+      nodePort: 31000 # Choose an available node port
