@@ -1,78 +1,44 @@
-# Stage 1: Build dependencies using Composer
-FROM composer:2 AS composer-build
+# Base image
+FROM php:8.3-fpm-alpine AS base
 
-WORKDIR /app
+# Install necessary extensions and tools
+RUN apk --update add mysql-client curl git libxml2-dev libzip-dev zip \
+    && docker-php-ext-install pdo_mysql zip xml
 
-# Copy composer files
-COPY ./unicorn-backend/composer.json ./unicorn-backend/composer.lock ./
-
-# Install dependencies
-RUN composer install --no-dev --optimize-autoloader --no-scripts
-
-# Stage 2: Base image for PHP and dependencies
-FROM php:8-fpm-alpine
-
-# Set default user and UID if not provided during build
-ARG user=laravel
-ARG group=laravel
-ARG uid=1000
-
-# Install system dependencies and PHP extensions
-RUN apk update && apk add --no-cache \
-    mysql-client \
-    nginx \
-    bash \
-    libpng-dev \
-    libjpeg-turbo-dev \
-    freetype-dev \
-    oniguruma-dev \
-    libxml2-dev \
-    curl \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_mysql mbstring exif pcntl bcmath opcache
-
-# Install Composer globally
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
-
-# Create developer user and group
-RUN addgroup -g $uid $user && \
-    adduser -u $uid -G $user -D $group -D -h /home/$user $user && \
-    mkdir -p /home/$user/.composer && \
-    chown -R $user:$user /home/$user 
+# Add Composer globally
+ENV COMPOSER_HOME=/tmp
+COPY --from=composer:2.7.7 /usr/bin/composer /usr/bin/composer
 
 # Set working directory
-WORKDIR /app/api
+WORKDIR /var/www/html
 
-# Copy application code
-COPY ./unicorn-backend ./
+# Stage 1: Dependencies Installation
+FROM base AS deps
+
 # Copy composer files
 COPY ./unicorn-backend/composer.json ./unicorn-backend/composer.lock ./
 
+# Install dependencies without scripts or autoload
+RUN composer install --no-dev --no-autoloader --no-scripts --prefer-dist
 
-# Copy dependencies from the Composer build stage
-COPY --from=composer-build /app/vendor ./vendor
+# Stage 2: Production
+FROM base AS prod
 
-# Set ownership of application directory
-RUN chown -R $user:$user /app/api
+# Set working directory
+WORKDIR /var/www/html
 
-# Set permissions for Laravel directories
-RUN chown -R $user:$user /app/api && \
-    chmod -R 775 /app/api/storage /app/api/bootstrap/cache && \
-    chmod -R 775 /app/api/storage/framework /app/api/storage/logs
+# Copy application files
+COPY ./unicorn-backend/ ./
 
-# Copy the start script
-COPY ./shell-command-entrypoint/seeder_table.sh /seeder_table.sh
-RUN chmod +x /seeder_table.sh   
+# Copy vendor folder from deps stage
+COPY --from=deps /var/www/html/vendor /var/www/html/vendor
 
-# Copy Nginx configuration
-COPY ./nginx/backend_nginx.conf /etc/nginx/nginx.conf
+# Optimize Composer autoload and Laravel
+RUN composer dump-autoload --optimize \
+    && php artisan optimize
 
-# Expose Nginx (80) and PHP-FPM (9000) ports
-EXPOSE 80 9000
+# Run migrations and seeders during runtime (Optional)
+CMD ["sh", "-c", "php artisan migrate --force && php artisan db:seed --force && php-fpm"]
 
-# Default command to run the application
-#CMD ["sh", "-c", "composer install && php artisan migrate:refresh --seed && php-fpm -D && nginx -g 'daemon off;'"]
-#CMD ["./shell-command-entrypoint/start.sh"]
-
-ENTRYPOINT ["bash", "/seeder_table.sh"]
-CMD ["php-fpm", "-D", "&&", "nginx", "-g", "daemon off;"]
+# Expose port 9000 for php-fpm
+EXPOSE 9000

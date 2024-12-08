@@ -1,25 +1,30 @@
-FROM node:23-alpine3.19 AS base
-WORKDIR /app/web
+# Stage 1: Build
+FROM node:23-alpine3.19 AS builder
 
+# Set working directory
+WORKDIR /app
+
+# Install dependencies
 COPY ./unicorn-frontend/package.json ./unicorn-frontend/package-lock.json ./
+RUN npm install
 
-# Perform a clean npm install
-RUN npm cache clean --force && npm install
+# Copy the application source
+COPY . .
 
-COPY ./unicorn-frontend .
-
-### Development Stage
-FROM base AS dev
-EXPOSE 5173
-CMD ["npm", "run", "dev"]
-
-### Build Stage
-FROM base AS build
+# Build the application
 RUN npm run build
 
-### Production Stage with Nginx
-FROM nginx:stable-alpine AS prod
-COPY --from=build /app/web/dist /usr/share/nginx/html
-COPY ./nginx/frontend_nginx.conf /etc/nginx/nginx.conf
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+# Stage 2: Runtime
+FROM node:23-alpine3.19 AS runtime
+
+# Set working directory
+WORKDIR /app
+
+# Copy built application from builder
+COPY --from=builder /app/dist /app/dist
+
+# Expose port
+EXPOSE 8080
+
+# Default command to serve the app
+CMD ["npx", "http-server", "dist", "-p", "8080"]
