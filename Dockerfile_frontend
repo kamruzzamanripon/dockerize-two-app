@@ -4,12 +4,14 @@ FROM node:23-alpine3.19 AS builder
 # Set working directory
 WORKDIR /app
 
-# Install dependencies
+# Copy package.json and package-lock.json for dependency installation
 COPY ./unicorn-frontend/package.json ./unicorn-frontend/package-lock.json ./
+
+# Install dependencies
 RUN npm install
 
 # Copy the application source
-COPY . .
+COPY ./unicorn-frontend ./
 
 # Build the application
 RUN npm run build
@@ -20,11 +22,11 @@ FROM node:23-alpine3.19 AS runtime
 # Set working directory
 WORKDIR /app
 
-# Copy built application from builder
+# Copy built application from the builder stage
 COPY --from=builder /app/dist /app/dist
 
-# Expose port
-EXPOSE 8080
+# Expose port 3000
+EXPOSE 3000
 
-# Default command to serve the app
-CMD ["npx", "http-server", "dist", "-p", "8080"]
+# Default command to serve the application using http-server
+CMD ["npx", "http-server", "dist", "-p", "3000"]

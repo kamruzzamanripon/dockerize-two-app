@@ -38,7 +38,8 @@ RUN composer dump-autoload --optimize \
     && php artisan optimize
 
 # Run migrations and seeders during runtime (Optional)
-CMD ["sh", "-c", "php artisan migrate --force && php artisan db:seed --force && php-fpm"]
+#CMD ["sh", "-c", "php artisan migrate --force && php artisan db:seed --force && php-fpm"]
+CMD ["sh", "-c", "php artisan migrate --force && php-fpm"]
 
 # Expose port 9000 for php-fpm
 EXPOSE 9000
