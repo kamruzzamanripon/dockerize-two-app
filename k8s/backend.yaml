@@ -26,12 +26,18 @@ spec:
               value: mysql
             - name: DB_PORT
               value: "3306"
-            - name: DB_DATABASE
-              value: "laravel"
-            - name: DB_USERNAME
-              value: "laravel"
-            - name: DB_PASSWORD
-              value: "secret"
+            # - name: DB_DATABASE
+            #   value: "laravel"
+            # - name: DB_USERNAME
+            #   value: "laravel"
+            # - name: DB_PASSWORD
+            #   value: "secret"
+          envFrom:
+            - configMapRef:
+                name: backend-config
+            - secretRef:
+                name: laravel-secret
+                  
         - name: nginx-backend
           image: nginx:latest
           ports:

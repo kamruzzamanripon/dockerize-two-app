@@ -17,15 +17,18 @@ spec:
       containers:
         - name: mysql
           image: mysql:8.0
-          env:
-            - name: MYSQL_ROOT_PASSWORD
-              value: "secret"
-            - name: MYSQL_DATABASE
-              value: "laravel"
-            - name: MYSQL_USER
-              value: "laravel"
-            - name: MYSQL_PASSWORD
-              value: "secret"
+          # env:
+          #   - name: MYSQL_ROOT_PASSWORD
+          #     value: "secret"
+          #   - name: MYSQL_DATABASE
+          #     value: "laravel"
+          #   - name: MYSQL_USER
+          #     value: "laravel"
+          #   - name: MYSQL_PASSWORD
+          #     value: "secret"
+          envFrom:
+            - secretRef:
+                name: mysql-secret
           ports:
             - containerPort: 3306
           volumeMounts:
@@ -75,5 +78,14 @@ spec:
     requests:
       storage: 256Mi
 
-
-
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-secret
+type: Opaque
+data:
+  MYSQL_DATABASE: bGFyYXZlbA0K
+  MYSQL_USER: bGFyYXZlbA0K
+  MYSQL_PASSWORD: c2VjcmV0DQo=
+  MYSQL_ROOT_PASSWORD: c2VjcmV0DQo=
