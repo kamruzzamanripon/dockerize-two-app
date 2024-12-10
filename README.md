@@ -39,3 +39,5 @@ docker run -p 5173:5173 unicorn-frontend:dev
 docker build -t unicorn-frontend:prod --target prod .
 docker run -p 80:80 unicorn-frontend:prod
 ```
+
+update main file
