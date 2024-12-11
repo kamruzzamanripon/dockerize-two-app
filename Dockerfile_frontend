@@ -5,7 +5,7 @@ FROM node:23-alpine3.19 AS builder
 WORKDIR /app
 
 # Copy package.json and package-lock.json for dependency installation
-COPY ./unicorn-frontend/package.json ./unicorn-frontend/package-lock.json ./
+COPY ./unicorn-frontend/package.json  ./
 
 # Install dependencies
 RUN npm install
