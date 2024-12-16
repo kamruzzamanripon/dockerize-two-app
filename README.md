@@ -40,4 +40,4 @@ docker build -t unicorn-frontend:prod --target prod .
 docker run -p 80:80 unicorn-frontend:prod
 ```
 
-update main file
+update main file and update backend url
