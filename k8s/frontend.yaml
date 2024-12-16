@@ -44,6 +44,19 @@ spec:
 
 ---
 apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: frontend-pv
+spec:
+  capacity:
+    storage: 256Mi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /root/frontend-data            
+
+---
+apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: frontend-pvc

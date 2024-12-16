@@ -56,9 +56,22 @@ spec:
         - name: nginx-config-backend
           configMap:
             name: nginx-config-backend
-        - name: nginx-logs
-          persistentVolumeClaim:
-            claimName: nginx-log-pvc    
+        # - name: nginx-logs
+        #   persistentVolumeClaim:
+        #     claimName: nginx-log-pvc   
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: backend-pv
+spec:
+  capacity:
+    storage: 256Mi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /root/project/dockerize-two-app/k8s/backenddata             
 
 ---
 apiVersion: v1
